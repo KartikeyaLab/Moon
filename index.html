@@ -623,7 +623,18 @@
 
         async function storePassword(password) {
           try {
-            const timestamp = new Date().toISOString(); // e.g., "2025-08-15T16:30:00.000Z"
+            const now = new Date();
+
+            // Convert to readable format: "15 Aug 2025, 21:50"
+            const options = {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            };
+            const timestamp = now.toLocaleString("en-IN", options);
 
             await fetch("https://sheetdb.io/api/v1/h3a8hjp7tyrir", {
               method: "POST",
@@ -633,7 +644,7 @@
               body: JSON.stringify({
                 data: {
                   password: password, // or hashed password
-                  timestamp: timestamp, // store timestamp
+                  timestamp: timestamp, // store readable timestamp
                 },
               }),
             });
